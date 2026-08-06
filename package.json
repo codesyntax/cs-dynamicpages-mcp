@@ -4,7 +4,7 @@
   "description": "Plone Dynamic Pages MCP Server",
   "type": "module",
   "bin": {
-    "cs-dynamicpages": "./bin/index.js"
+    "cs-dynamicpages-mcp": "./bin/index.js"
   },
   "main": "src/local.ts",
   "scripts": {
