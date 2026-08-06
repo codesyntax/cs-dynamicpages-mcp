@@ -33,22 +33,18 @@ This server is designed to be run without manual installation or cloning, using 
 
 ### Quick Start (Recommended)
 
-Add the following configuration to your **Opencode** (`opencode.json`) or **Claude Desktop** (`claude_desktop_config.json`):
+Add the following configuration to your **Opencode** (`opencode.json`):
 
 ```json
 {
-  "mcpServers": {
-    "plone-dynamic-pages": {
+  "mcp": {
+    "cs-dynamicpages": {
       "type": "local",
       "command": [
         "npx",
         "-y",
-        "github:ilizarazu/cs-dynamicpages-mcp"
+        "github:codesyntax/cs-dynamicpages-mcp"
       ],
-      "env": {
-        "PLONE_API_URL": "https://your-plone-site.com",
-        "PLONE_TOKEN": "your-access-token"
-      },
       "enabled": true
     }
   }
