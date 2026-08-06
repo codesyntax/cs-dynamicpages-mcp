@@ -4,10 +4,11 @@ A specialized Model Context Protocol (MCP) server for managing Plone sites built
 
 ## 🚀 Key Features
 
-*   **Stateless & Site-Agnostic**: Works with any Plone site. Credentials and API URLs are provided per session or via environment variables.
+*   **Session-Aware & Contextual**: Use `set_session_context` to set credentials once and forget them for the rest of the session.
 *   **Dynamic Layout Management**: Analyze full page structures, including rows and featured items.
 *   **Full CRUD Operations**: Create, patch, move, and delete Plone content and layout components.
-*   **Local Execution**: Designed to run as a local process via `stdio`, ensuring stability and performance.
+*   **Universal Content Support**: Generic `create_content` tool for any Plone content type (Folder, Document, Link, etc.).
+*   **Local File Integration**: `upload_local_asset` allows direct upload of files from your filesystem.
 
 ---
 
@@ -16,14 +17,18 @@ A specialized Model Context Protocol (MCP) server for managing Plone sites built
 | Tool | Description |
 | :--- | :--- |
 | `check_credentials_status` | Verifies if Plone credentials (token or cookie) are provided. |
+| `set_session_context` | Sets the default site URL and credentials for the current session. |
 | `get_site_definitions` | Fetches site-specific definitions (Schemas and Row Types) from Plone. |
 | `get_dynamic_page_content` | Returns the full JSON structure of a DynamicPage (Rows + Featured Items). |
+| `create_content` | Creates any content type in Plone (Folder, Document, Link, etc.). |
 | `create_dynamic_page_row` | Creates a new layout section (`DynamicPageRow`) in a page. |
+| `create_dynamic_page_row_featured` | Creates a featured item (`DynamicPageRowFeatured`) within an existing row. |
 | `search_content` | Searches for content, assets, or pages within the Plone site. |
 | `patch_content` | Updates an existing Plone object (PATCH). |
 | `delete_content` | Deletes a Plone object (requires confirmation). |
 | `move_dynamic_page_row` | Reorders layout rows (top, bottom, or specific position). |
-| `upload_file` | Uploads images or files directly to Plone. |
+| `upload_file` | Uploads images or files using Base64 data. |
+| `upload_local_asset` | Reads a file from the local filesystem and uploads it to Plone. |
 
 ---
 
@@ -53,9 +58,11 @@ Add the following configuration to your **Opencode** (`opencode.json`):
 
 ### Environment Variables
 
-*   `PLONE_API_URL`: The base URL of your Plone REST API (optional if provided in tool calls).
+*   `PLONE_API_URL`: The base URL of your Plone REST API.
 *   `PLONE_TOKEN`: Bearer token for authentication.
-*   `PLONE_COOKIE`: Session cookie (`__ac`) for authentication (alternative to token).
+*   `PLONE_COOKIE`: Session cookie (`__ac`) for authentication.
+
+*Note: You can also set these dynamically during a session using the `set_session_context` tool.*
 
 ---
 
