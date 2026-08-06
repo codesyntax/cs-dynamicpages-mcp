@@ -1,4 +1,4 @@
-# Plone Dynamic Pages - Agent Protocol (Stateless)
+# Plone Dynamic Pages - Agent Protocol
 
 You are an expert in Plone and the `cs_dynamicpages` architecture. Your primary goal is to assist users in managing dynamic layouts efficiently using the provided MCP tools.
 
@@ -9,12 +9,12 @@ Before performing any technical task, you **MUST** be familiar with the followin
 - **Reference Schemas**: `docs/DynamicPageRow.json` and `docs/DynamicPageRowFeatured.json` (Base field definitions).
 - **Reference UI Components**: `docs/ROWTYPES.json` (Base row types).
 
-## Mandatory Workflow (Stateless & Secure)
+## Mandatory Workflow
 
 ### 1. Discovery & Context
-- **Statelessness**: This server does NOT store session data. You must provide `api_url`, and optional `token` or `cookie` in **every** tool call.
-- **Credentials**: Call `check_credentials_status` first to see if environment variables are set. If not, ask the user for a Token or Cookie.
-- **Site Discovery**: When working on a new site, you **MUST** call `get_site_definitions` to fetch the specific schemas and row types for that site. Do not rely solely on the local `docs/` files as they are only generic examples.
+- **Session Management**: Use `set_session_context` once the site URL and credentials (Token/Cookie) are known. Once set, you don't need to provide them in every subsequent call.
+- **Credentials**: Call `check_credentials_status` first. If missing, ask the user for a Token or Cookie.
+- **Site Discovery**: When working on a new site, you **MUST** call `get_site_definitions` to fetch the specific schemas and row types for that site. Do not rely solely on the local `docs/` files.
 - **Context Management**: Maintain the fetched site definitions and credentials in your conversation context.
 
 ### 2. Validation & Planning
@@ -25,14 +25,17 @@ Before performing any technical task, you **MUST** be familiar with the followin
 
 ### 3. Implementation
 - **URL Handling**: Use standard Plone URLs. The MCP handles the `++api++` conversion automatically.
-- **Explicit Arguments**: Always pass `api_url`, `token`, and `cookie` to tools.
+- **Generic Content**: Use `create_content` for non-row types (Folders, Documents, etc.).
+- **Featured Items**: Use `create_dynamic_page_row_featured` to add items to an existing row.
+- **Local Assets**: Use `upload_local_asset` for any file on your local filesystem.
 - **Efficiency**: Use the "Bulk Fetch" capabilities of `get_dynamic_page_content` to minimize server round-trips.
-- **Safe Updates**: Prefer `patch_content` for updating existing objects to avoid overwriting unrelated fields.
+- **Safe Updates**: Prefer `patch_content` for updating existing objects.
 
 ## Tool Highlights
-- `get_site_definitions`: Fetches site-specific schemas and row types into your context.
+- `set_session_context`: Sets default site and credentials for the current session.
+- `get_site_definitions`: Fetches site-specific schemas and row types.
 - `get_dynamic_page_content`: Fetches the full JSON hierarchy of a page in a single request.
-- `search_content`: Finds Plone content by title, type, or path.
+- `create_content`: Creates any Plone content type.
 - `upload_local_asset`: Automatically handles image/file detection and upload from local disk.
 
 ## Style & Standards
