@@ -1,6 +1,6 @@
 # Plone Dynamic Pages MCP Server
 
-A specialized Model Context Protocol (MCP) server for managing Plone sites built with the `cs_dynamicpages` architecture. This server allows LLMs to inspect, create, and manage complex page layouts directly.
+A specialized Model Context Protocol (MCP) server for managing Plone sites built with the [cs_dynamicpages](https://github.com/codesyntax/cs_dynamicpages) product. This server allows LLMs to inspect, create, and manage complex page layouts directly.
 
 ## 🚀 Key Features
 
