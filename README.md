@@ -19,11 +19,11 @@ A specialized Model Context Protocol (MCP) server for managing Plone sites built
 | `check_credentials_status` | Verifies if Plone credentials (token or cookie) are provided. |
 | `set_session_context` | Sets the default site URL and credentials for the current session. |
 | `get_site_definitions` | Fetches site-specific definitions (Schemas and Row Types) from Plone. |
-| `get_dynamic_page_content` | Returns the full JSON structure of a DynamicPage (Rows + Featured Items). |
+| `get_dynamic_page_content` | Returns the full JSON structure of a DynamicPage (Rows + Featured Items). Handles up to 1000 items. |
 | `create_content` | Creates any content type in Plone (Folder, Document, Link, etc.). |
 | `create_dynamic_page_row` | Creates a new layout section (`DynamicPageRow`) in a page. |
 | `create_dynamic_page_row_featured` | Creates a featured item (`DynamicPageRowFeatured`) within an existing row. |
-| `search_content` | Searches for content, assets, or pages within the Plone site. |
+| `search_content` | Searches for content, assets, or pages. Supports custom `limit` (default: 100). |
 | `patch_content` | Updates an existing Plone object (PATCH). |
 | `delete_content` | Deletes a Plone object (requires confirmation). |
 | `move_dynamic_page_row` | Reorders layout rows (top, bottom, or specific position). |

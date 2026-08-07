@@ -28,7 +28,8 @@ Before performing any technical task, you **MUST** be familiar with the followin
 - **Generic Content**: Use `create_content` for non-row types (Folders, Documents, etc.).
 - **Featured Items**: Use `create_dynamic_page_row_featured` to add items to an existing row.
 - **Local Assets**: Use `upload_local_asset` for any file on your local filesystem.
-- **Efficiency**: Use the "Bulk Fetch" capabilities of `get_dynamic_page_content` to minimize server round-trips.
+- **Efficiency**: Use the "Bulk Fetch" capabilities of `get_dynamic_page_content` to minimize server round-trips. This tool automatically retrieves up to 1000 sub-items (rows and featured items) in a single operation.
+- **Pagination**: The `search_content` tool defaults to 100 results but can be adjusted via the `limit` parameter. Always consider if you need more than the default for large site audits.
 - **Safe Updates**: Prefer `patch_content` for updating existing objects.
 
 ## Tool Highlights

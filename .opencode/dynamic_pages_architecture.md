@@ -52,6 +52,7 @@ To ensure optimal performance and reliability when managing Dynamic Pages, the f
 ### 1. Request Optimization (Bulk Operations)
 - **Problem**: Individual POST requests for large page structures (e.g., 20+ rows) are inefficient, increase authentication overhead, and risk database write conflicts.
 - **Standard**: When creating multiple rows, use a bulk creation tool (e.g., `create_rows_bulk`) if available. A single transaction reduces server load and ensures layout atomicity.
+- **Retrieval Optimization**: To avoid partial layout data, `get_dynamic_page_content` fetches with `b_size=1000`. For general discovery, `search_content` defaults to `b_size=100`.
 
 ### 2. Schema Enforcement & Validation
 - **Local Pre-validation**: The MCP agent must validate payloads against local schemas *before* network execution. 

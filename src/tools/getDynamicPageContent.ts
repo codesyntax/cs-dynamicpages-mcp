@@ -4,12 +4,12 @@ import { ensureApiUrl } from "../utils";
 
 export async function getDynamicPageContent(credentials: PloneCredentials, pageUrl: string) {
   const apiUrl = ensureApiUrl(pageUrl);
-  const pageData = await fetchPlone(credentials, apiUrl);
+  const pageData = await fetchPlone(credentials, `${apiUrl}?b_size=1000`);
   
   const searchPath = new URL(apiUrl).pathname.replace("/++api++", "");
   const baseApiUrl = apiUrl.split("/++api++")[0];
   
-  const searchUrl = `${ensureApiUrl(baseApiUrl)}/@search?path=${searchPath}&portal_type=DynamicPageRow&portal_type=DynamicPageRowFeatured&fullobjects=1&metadata_fields=portal_type&sort_on=getObjPositionInParent`;
+  const searchUrl = `${ensureApiUrl(baseApiUrl)}/@search?path=${searchPath}&portal_type=DynamicPageRow&portal_type=DynamicPageRowFeatured&fullobjects=1&metadata_fields=portal_type&sort_on=getObjPositionInParent&b_size=1000`;
   
   const searchResp = await fetchPlone(credentials, searchUrl);
   const searchResults = searchResp.items || [];
