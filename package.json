@@ -8,11 +8,21 @@
   },
   "main": "src/local.ts",
   "scripts": {
-    "start": "tsx src/local.ts"
+    "start": "tsx src/local.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.1",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@plone/mcp": "1.0.0-alpha.1",
     "tsx": "^4.23.9",
-    "typescript": "^5.4.5"
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.5",
+    "vitest": "^4.0.8"
   }
 }
