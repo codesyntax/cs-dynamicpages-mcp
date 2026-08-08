@@ -40,11 +40,37 @@ Earlier versions of this server shipped their own `set_session_context` / `check
 
 ## 💻 Installation & Usage
 
-The server runs from this repo over STDIO (no Plone-side changes required).
+The server runs over STDIO (no Plone-side changes required) and can be launched either directly from the GitHub repository via `npx` or from a local clone of this repo.
 
-### Quick Start
+### Quick Start: run via npx from GitHub (no cloning required)
 
-Install dependencies and add the following configuration to your **Opencode** (`opencode.json`):
+Add the following configuration to your **Opencode** (`opencode.json`):
+
+```json
+{
+  "mcp": {
+    "cs-dynamicpages": {
+      "type": "local",
+      "command": ["npx", "-y", "github:codesyntax/cs-dynamicpages-mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+`npx` fetches the repository from GitHub and launches the server automatically; nothing else needs to be installed.
+
+### Running from a local clone
+
+Clone the repository and install its dependencies:
+
+```bash
+git clone https://github.com/codesyntax/cs-dynamicpages-mcp
+cd cs-dynamicpages-mcp
+npm install
+```
+
+Then point your MCP client at the local entry point instead of the GitHub package:
 
 ```json
 {
@@ -58,7 +84,7 @@ Install dependencies and add the following configuration to your **Opencode** (`
 }
 ```
 
-or run it directly with `npm start` and point any MCP client at `node --experimental-strip-types`-free tsx process (`npx tsx src/local.ts`).
+or simply run it directly with `npm start`.
 
 ### Environment Variables
 
