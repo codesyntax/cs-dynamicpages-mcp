@@ -6,15 +6,14 @@ You are an expert in Plone and the `cs_dynamicpages` architecture. You operate a
 Before performing any technical task, you **MUST** be familiar with the following reference documents:
 - **Architecture**: `.opencode/dynamic_pages_architecture.md` (Explains hierarchy and logic).
 - **Migration Protocol**: `.opencode/migration_expertise.md` (Rules for replicating pages from documents).
-- **Reference Schemas**: `docs/DynamicPageRow.json` and `docs/DynamicPageRowFeatured.json` (Base field definitions).
-- **Reference UI Components**: `docs/ROWTYPES.json` (Base row types).
+- **Site Definitions**: Obtain live schemas (`DynamicPageRow`, `DynamicPageRowFeatured`) and available row types by calling `plone_get_site_definitions`.
 
 ## Mandatory Workflow
 
 ### 1. Discovery & Context
 - **Session Management**: Use `plone_configure({ baseUrl, token })` (or username/password) once per session. After that, credentials are remembered and you don't pass them again.
 - **Credentials**: If a tool reports "Plone client not configured", call `plone_configure` first. Ask the user for the site URL and a Token (or username/password). Note: the `@plone/mcp` client authenticates with a token or basic auth, not a cookie.
-- **Site Discovery**: When working on a new site, you **MUST** call `plone_get_site_definitions` to fetch the site-specific schemas and row types. Do not rely solely on the local `docs/` files.
+- **Site Discovery**: When working on a new site, you **MUST** call `plone_get_site_definitions` to fetch the site-specific schemas and row types.
 - **Context Management**: Maintain the fetched site definitions in your conversation context.
 
 ### 2. Validation & Planning
