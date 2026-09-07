@@ -18,8 +18,8 @@ Layout sections (Rows) are not direct children of the `DynamicPage`. They MUST b
 
 ### Row Types (`row_type`)
 The `row_type` field is critical. It determines:
-- Which fields in `DynamicPageRow.json` are relevant.
-- If the row can have `DynamicPageRowFeatured` children (check `row_type_has_featured_add_button` in `docs/ROWTYPES.json`).
+- Which fields in `DynamicPageRow` schema are relevant.
+- If the row can have `DynamicPageRowFeatured` children (check `row_type_has_featured_add_button` in `RowTypes` definitions).
 - The visual rendering on the frontend.
 
 ### Common Fields
@@ -30,7 +30,7 @@ The `row_type` field is critical. It determines:
 - **query**: Used in "Collection" type rows to automatically fetch content based on criteria.
 
 ## Asset Management
-- **Images**: Should be uploaded to an `images` or `imagenes` folder. Use `search_content` to find existing assets before uploading new ones.
+- **Images**: Should be uploaded to an `images` or `imagenes` folder. Use `plone_search` to find existing assets before uploading new ones.
 - **Links**: Use absolute Plone paths (e.g., `/es/blog/post-1`) or external URLs.
 
 ## Content Mapping Patterns (Migration)
@@ -42,21 +42,20 @@ When migrating content from a PDF to a Dynamic Page structure:
 - **Long Narrative** -> `cs_dynamicpages-text-view` or `cs_dynamicpages-intro-text-view`.
 
 ## Workflow Patterns
-- **Layout Discovery**: Always call `get_dynamic_page_content` to see the full structure including rows and featured items.
-- **Validation**: Compare desired fields against `docs/DynamicPageRow.json` and `docs/DynamicPageRowFeatured.json` before sending a `POST` or `PATCH` request.
+- **Layout Discovery**: Always call `plone_get_dynamic_page_content` to see the full structure including rows and featured items.
+- **Validation**: Compare desired fields against schemas fetched via `plone_get_site_definitions` before sending a request.
 
 ## Protocol Evolution & Performance Standards
 
 To ensure optimal performance and reliability when managing Dynamic Pages, the following technical standards must be adhered to:
 
-### 1. Request Optimization (Bulk Operations)
-- **Problem**: Individual POST requests for large page structures (e.g., 20+ rows) are inefficient, increase authentication overhead, and risk database write conflicts.
-- **Standard**: When creating multiple rows, use a bulk creation tool (e.g., `create_rows_bulk`) if available. A single transaction reduces server load and ensures layout atomicity.
-- **Retrieval Optimization**: To avoid partial layout data, `get_dynamic_page_content` fetches with `b_size=1000`. For general discovery, `search_content` defaults to `b_size=100`.
+### 1. Request Optimization (Batch Operations)
+- **Standard**: When creating rows with child items, use `plone_create_dynamic_page_row` with nested `featured` items in one call. This reduces server round-trips and ensures layout atomicity.
+- **Retrieval Optimization**: To avoid partial layout data, `plone_get_dynamic_page_content` fetches with `b_size=1000`. For general discovery, `plone_search` supports custom `b_size` (defaults to 25).
 
 ### 2. Schema Enforcement & Validation
-- **Local Pre-validation**: The MCP agent must validate payloads against local schemas *before* network execution. 
-- **Prefix Consistency**: All `row_type` values must be prefixed with the vendor namespace (e.g., `cs_dynamicpages-`) as defined in `docs/ROWTYPES.json`.
+- **Schema Validation**: The MCP agent must validate payloads against schemas fetched via `plone_get_site_definitions` *before* execution.
+- **Prefix Consistency**: Ensure `row_type` values match the naming defined in `RowTypes` returned by `plone_get_site_definitions` (e.g. `cs_dynamicpages-`).
 - **Mandatory Defaults**: Fields like `query` must be initialized (e.g., as an empty list `[]`) even if not used, to satisfy Plone's strict type validation.
 
 ### 3. Error Observability
