@@ -3,6 +3,7 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,10 +12,14 @@ const localTsPath = join(projectRoot, 'src', 'local.ts');
 
 /**
  * Robustly find the tsx binary.
- * In npx/npm environments, it should be in the PATH.
+ * Checks the package's local node_modules/.bin first, then falls back to PATH.
  */
 function getTsxCommand() {
-  // Try to use 'tsx' from PATH first (most reliable in npx)
+  const binaryName = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
+  const localTsx = join(projectRoot, 'node_modules', '.bin', binaryName);
+  if (existsSync(localTsx)) {
+    return localTsx;
+  }
   return 'tsx';
 }
 
