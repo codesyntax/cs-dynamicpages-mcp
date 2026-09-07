@@ -49,7 +49,7 @@ Add the following configuration to your **Opencode** (`opencode.json`):
 ```json
 {
   "mcp": {
-    "cs-dynamicpages": {
+    "cs-dynamicpages-mcp": {
       "type": "local",
       "command": ["npx", "-y", "github:codesyntax/cs-dynamicpages-mcp"],
       "enabled": true
@@ -75,7 +75,7 @@ Then point your MCP client at the local entry point instead of the GitHub packag
 ```json
 {
   "mcp": {
-    "cs-dynamicpages": {
+    "cs-dynamicpages-mcp": {
       "type": "local",
       "command": ["npx", "tsx", "src/local.ts"],
       "enabled": true
