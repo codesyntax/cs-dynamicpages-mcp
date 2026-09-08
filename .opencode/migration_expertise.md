@@ -7,7 +7,7 @@ This document outlines the protocol for replicating the structure of an existing
 When asked to "Replicate Page X using PDF Y", follow these steps:
 
 ### 1. Structure Blueprinting (Extraction)
-- Call `get_dynamic_page_content` on the **Source Page**.
+- Call `plone_get_dynamic_page_content` on the **Source Page**.
 - Analyze the `rows_items_full` list.
 - For each row, record:
     - `row_type` (The most critical field).
@@ -33,12 +33,12 @@ Before creating the new page, present a concise mapping to the user:
 - "Row 3 (Accordion): Using the 'Terms & Conditions' section."
 
 ### 5. Execution (Targeted Creation)
-- Create the target **DynamicPage** (if it doesn't exist).
+- Create the target **DynamicPage** (if it doesn't exist) using `plone_create_content`.
 - Navigate to `{target_page_url}/rows`.
-- Use `create_dynamic_page_row` for each mapped row.
+- Use `plone_create_dynamic_page_row` for each mapped row (optionally nesting featured items).
 - Ensure structural fields (`extra_class`, `width`) are copied exactly from the source to preserve the visual design.
 
 ## Handling Mismatches
 - **PDF has more content**: Suggest adding new rows of the same type as the existing ones to maintain rhythm.
 - **PDF has less content**: Propose merging data or leaving specific sections out of the new page.
-- **Missing Images**: If the source has images but the PDF doesn't, use `search_content` to find relevant generic images or ask the user for guidance.
+- **Missing Images**: If the source has images but the PDF doesn't, use `plone_search` to find relevant generic images or ask the user for guidance.

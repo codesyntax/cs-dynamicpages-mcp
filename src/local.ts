@@ -1,15 +1,14 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createMcpServer } from "./server";
+import { createExtendedServer } from "./extended-server";
 
 async function main() {
-  const server = createMcpServer();
+  const server = createExtendedServer();
   const transport = new StdioServerTransport();
-  
-  console.error("Plone Dynamic Pages MCP server (v2.0.0) starting on stdio...");
-  
+
+  console.error("Plone MCP server (extended with dynamic pages tools) starting on stdio...");
+
   await server.connect(transport);
-  
-  // Keep the process alive
+
   process.on("SIGINT", async () => {
     await server.close();
     process.exit(0);
