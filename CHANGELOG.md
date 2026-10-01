@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Path arguments are normalized to site-relative paths (full `++api++` URLs are converted automatically).
 - README install docs: primary option runs via `npx github:codesyntax/cs-dynamicpages-mcp`, with an alternative section for running from a local clone.
 - The dynamic pages tools live in one file per tool under `src/tools/` (plus `shared.ts` and `index.ts`), mirroring the `@plone/mcp` layout.
+- The Dynamic Pages documentation moved from `.opencode/` to `src/resources/docs/` and is served as MCP resources. The three definition resources return actionable guidance instead of failing when `plone_configure` has not run.
 
 ### Fixed
 
