@@ -2,8 +2,11 @@ import type { JsonRecord } from "./payloads";
 import { stripTrailingSlash } from "./paths";
 
 export function rowShortName(rowId: string): string {
-  if (!rowId.includes("://")) return rowId;
-  return stripTrailingSlash(rowId).split("/").pop()!;
+  // Accept short ids ("row-a"), full URLs and site-relative paths
+  // ("/rows/row-a"): in every case the short name is the last path segment.
+  const trimmed = stripTrailingSlash(rowId);
+  if (!trimmed.includes("/")) return trimmed;
+  return trimmed.split("/").pop() || trimmed;
 }
 
 export function computeOrderingPayload(
@@ -24,7 +27,9 @@ export function computeOrderingPayload(
     throw new Error("Row not found in folder");
   }
 
+  // `delta` is relative; `position` is a 1-based target and `currentPos` is a
+  // 0-based index, hence the extra -1.
   return {
-    ordering: { obj_id: objId, delta: Number(position) - currentPos },
+    ordering: { obj_id: objId, delta: Number(position) - 1 - currentPos },
   };
 }

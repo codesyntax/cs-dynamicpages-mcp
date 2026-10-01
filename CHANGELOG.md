@@ -27,6 +27,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The dynamic pages tools honour `ENABLED_TOOLS`, mirroring the official toolset.
 - Path arguments are normalized to site-relative paths (full `++api++` URLs are converted automatically).
 - README install docs: primary option runs via `npx github:codesyntax/cs-dynamicpages-mcp`, with an alternative section for running from a local clone.
+- The dynamic pages tools live in one file per tool under `src/tools/` (plus `shared.ts` and `index.ts`), mirroring the `@plone/mcp` layout.
+
+### Fixed
+
+- `plone_get_dynamic_page_content` returned no rows: comma-separated `portal_type` values are not supported by plone.restapi, and axios array encoding is ignored. It now sends repeated `portal_type` query parameters.
+- `plone_move_dynamic_page_row` computed an off-by-one `delta` for numeric positions and only read the first 25 rows of the folder; it now emits the correct relative delta and requests `b_size=1000`.
+- `reassembleDynamicContent` could attach rows from sibling folders whose id only shared a prefix (e.g. `rows-extra` next to `rows`).
+- Custom `fields` could override the controlled `@type`/`title`/`row_type` keys in row and featured payloads.
+- `rowShortName` now normalizes site-relative paths (`/rows/row-a`), not just full URLs.
+- Corrected the misleading `row_type` example in the tool schema.
 
 ### Removed
 

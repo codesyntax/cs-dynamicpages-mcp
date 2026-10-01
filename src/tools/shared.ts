@@ -50,7 +50,11 @@ export const featuredInputSchema = z.object({
 
 export const rowInputSchema = z.object({
   title: z.string().optional().describe("Title of the row"),
-  row_type: z.string().describe("Row type, e.g. 'hero' or 'columns'"),
+  row_type: z
+    .string()
+    .describe(
+      "Row type id from the site definitions, e.g. 'cs_dynamicpages-title-description-view' (call plone_get_site_definitions for the available values)",
+    ),
   fields: z
     .record(z.string(), z.unknown())
     .optional()

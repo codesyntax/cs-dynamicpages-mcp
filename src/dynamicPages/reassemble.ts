@@ -29,9 +29,12 @@ export function reassembleDynamicContent(
 
   if (rowsFolderSummary) {
     const rowsFolderId = stripTrailingSlash(String(rowsFolderSummary["@id"]));
-    const pageRows = rows.filter((row) =>
-      String(row["@id"]).startsWith(rowsFolderId),
-    );
+    const pageRows = rows.filter((row) => {
+      const rowId = stripTrailingSlash(String(row["@id"]));
+      // Match only the rows folder itself or its children, so sibling folders
+      // that merely share the id prefix (e.g. "/rows-extra") are excluded.
+      return rowId === rowsFolderId || rowId.startsWith(`${rowsFolderId}/`);
+    });
 
     const rowsItemsFull = pageRows.map((row) => {
       const rowId = stripTrailingSlash(String(row["@id"]));

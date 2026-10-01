@@ -17,14 +17,20 @@ export const ploneGetDynamicPageContent: ToolDefinition = {
     const client = getClient(extra);
     const pagePath = normalizePath(localPath(args.path));
     const pageData = await client.get(pagePath, { b_size: 1000 });
-    const search = await client.get("/@search", {
-      path: pagePath,
-      portal_type: "DynamicPageRow,DynamicPageRowFeatured",
-      fullobjects: 1,
-      metadata_fields: "portal_type",
-      sort_on: "getObjPositionInParent",
-      b_size: 1000,
-    });
+    // plone.restapi does not split comma-separated `portal_type` values, and
+    // axios serialises JS arrays as `portal_type[]=...`, which is ignored. Use
+    // repeated query parameters (URLSearchParams) so the filter actually applies.
+    const searchParams = new URLSearchParams();
+    searchParams.append("portal_type", "DynamicPageRow");
+    searchParams.append("portal_type", "DynamicPageRowFeatured");
+    searchParams.append("path", pagePath);
+    searchParams.append("fullobjects", "1");
+    searchParams.append("sort_on", "getObjPositionInParent");
+    searchParams.append("b_size", "1000");
+    const search = await client.get(
+      "/@search",
+      searchParams as unknown as Record<string, unknown>,
+    );
     const items = (search as { items?: JsonRecord[] }).items || [];
     return textContent(
       reassembleDynamicContent(pageData as Record<string, unknown>, items),

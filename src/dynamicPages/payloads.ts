@@ -20,19 +20,20 @@ export interface UploadInput {
 }
 
 export function buildRowPayload({ title, row_type, fields }: RowInput): JsonRecord {
+  // Spread custom fields first so they can never override the controlled keys.
   return {
+    ...(fields || {}),
     "@type": "DynamicPageRow",
     title: title || "New Row",
     row_type,
-    ...(fields || {}),
   };
 }
 
 export function buildFeaturedPayload({ title, fields }: FeaturedInput): JsonRecord {
   return {
+    ...(fields || {}),
     "@type": "DynamicPageRowFeatured",
     title: title || "Featured Item",
-    ...(fields || {}),
   };
 }
 

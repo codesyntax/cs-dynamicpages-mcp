@@ -19,7 +19,9 @@ export const ploneMoveDynamicPageRow: ToolDefinition = {
   handler: runWith("MoveDynamicPageRow", async (args, extra) => {
     const client = getClient(extra);
     const folderPath = localPath(args.folderPath);
-    const folder = (await client.get(folderPath)) as {
+    // plone.restapi batches folder items at 25 by default; request a larger
+    // page so findIndex sees every row.
+    const folder = (await client.get(folderPath, { b_size: 1000 })) as {
       items?: Record<string, unknown>[];
     };
     const items = folder.items || [];
