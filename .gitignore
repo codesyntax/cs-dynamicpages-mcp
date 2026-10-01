@@ -1,5 +1,7 @@
 .opencode/node_modules
 node_modules
-dist
+dist/*
+!dist/local.js
+!dist/local.js.map
 mcp.log
 *.pyc

@@ -6,8 +6,7 @@ import type {
   ServerRequest,
   ServerNotification,
 } from "@modelcontextprotocol/sdk/types.js";
-import { sessionManager } from "@plone/mcp/dist/session-manager.js";
-import { wrapError } from "@plone/mcp/dist/utils/block-utils.js";
+import { sessionManager, wrapError } from "../plone-mcp";
 import {
   buildFeaturedPayload,
   buildRowPayload,
@@ -269,7 +268,15 @@ export const dynamicPagesTools: ToolDefinition[] = [
 ];
 
 export function registerDynamicPagesTools(server: McpServer) {
+  // Mirror the official @plone/mcp behaviour: ENABLED_TOOLS may restrict the
+  // registered tools. When unset, every dynamic pages tool is registered.
+  const enabledToolsEnv = process.env.ENABLED_TOOLS;
+  const enabledTools = enabledToolsEnv
+    ? new Set(enabledToolsEnv.split(",").map((t) => t.trim()))
+    : null;
+
   for (const tool of dynamicPagesTools) {
+    if (enabledTools && !enabledTools.has(tool.name)) continue;
     server.registerTool(
       tool.name,
       {

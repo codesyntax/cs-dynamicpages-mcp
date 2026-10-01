@@ -78,13 +78,33 @@ Then point your MCP client at the local entry point instead of the GitHub packag
     "cs-dynamicpages-mcp": {
       "type": "local",
       "command": ["npx", "tsx", "src/local.ts"],
+      "cwd": "/absolute/path/to/cs-dynamicpages-mcp",
       "enabled": true
     }
   }
 }
 ```
 
-or simply run it directly with `npm start`.
+The `cwd` is required because MCP clients launch the command from an arbitrary
+directory; without it the relative `src/local.ts` will not resolve. You can also
+run the server directly from the clone with `npm start` (after `npm run bundle`).
+
+### Running from a local clone without `tsx`
+
+The compiled entry point (`dist/local.js`) is committed to the repository, so it is
+available without building:
+
+```json
+{
+  "mcp": {
+    "cs-dynamicpages-mcp": {
+      "type": "local",
+      "command": ["node", "/absolute/path/to/cs-dynamicpages-mcp/dist/local.js"],
+      "enabled": true
+    }
+  }
+}
+```
 
 ### Environment Variables
 
@@ -94,7 +114,7 @@ or simply run it directly with `npm start`.
 
 *Note: You can also set these dynamically during a session with the `plone_configure` tool.*
 
-Requires **Node.js 22+** (the same requirement as `@plone/mcp`).
+Requires a Node.js version supported by `@plone/mcp`: `^20.19.0 || >=22.12.0` (Node.js 22+ recommended).
 
 ---
 
@@ -102,21 +122,38 @@ Requires **Node.js 22+** (the same requirement as `@plone/mcp`).
 
 *   **`src/local.ts`**: Entry point for local `stdio` execution (the extended server).
 *   **`src/extended-server.ts`**: Creates the `@plone/mcp` server and registers the dynamic pages tools.
+*   **`src/plone-mcp.ts`**: Single adapter re-exporting the `@plone/mcp` internals the wrapper relies on.
 *   **`src/tools/registerDynamicPagesTools.ts`**: The seven dynamic pages tools and their registration.
 *   **`src/dynamicPages/`**: Pure helpers (payload builders, ordering computation, hierarchy reassembly) shared by the tools.
+*   **`scripts/build.mjs`**: esbuild bundling of `src/local.ts` into `dist/local.js`.
 
 ---
 
 ## 🧪 Development
 
 ```bash
-npm install
+npm install       # .npmrc sets legacy-peer-deps for npm 10 + vitest
+npm run bundle    # rebuild dist/local.js (esbuild) — run before committing
 npm test          # vitest unit + handler seam tests
 npm run typecheck # tsc --noEmit
-npm start         # run the stdio server directly
+npm start         # run the compiled stdio server (node dist/local.js)
+npm run dev       # run from source with tsx (src/local.ts)
 ```
 
-This project pins `@plone/mcp` to the released `1.0.0-alpha.1` package; bump it in `package.json` to pick up newer releases.
+`dist/local.js` is intentionally committed: git installs (`npx github:…`) must not
+run a build, because that would install devDependencies and npm 10.9.x crashes on
+vitest's peer set. Remember to run `npm run bundle` and commit `dist/` after
+changing the source.
+
+> The build script is named `bundle` (not `build`) on purpose: npm/pacote treat a
+> `build` script as a git-dependency preparation trigger, which would reinstall
+> devDependencies on `npx github:…`.
+
+This project pins `@plone/mcp` to the published `1.0.0-alpha.2` package. To track
+unreleased changes from the official repository instead, point the dependency at
+the branch (`git+https://github.com/plone/plone-mcp.git#main`). Note that a git
+dependency requires **npm >= 11** (or `legacy-peer-deps` on npm 10), because
+`@plone/mcp` compiles itself on install.
 
 ---
 

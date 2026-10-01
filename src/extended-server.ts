@@ -1,4 +1,4 @@
-import { createServer } from "@plone/mcp/dist/server.js";
+import { createServer } from "./plone-mcp";
 import { registerDynamicPagesTools } from "./tools/registerDynamicPagesTools";
 
 export function createExtendedServer() {

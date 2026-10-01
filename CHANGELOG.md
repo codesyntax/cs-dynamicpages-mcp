@@ -14,11 +14,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `plone_create_dynamic_page_row_featured` tool to add a featured item to an existing row.
 - `plone_move_dynamic_page_row` tool to reorder rows (top, bottom, or a specific position).
 - `plone_upload_file` and `plone_upload_local_asset` tools to upload files (base64 or from the local filesystem).
-- Vitest unit + handler seam tests, `tsconfig.json`, and `typecheck`/`test`/`build` npm scripts.
+- Vitest unit + handler seam tests, `tsconfig.json`, and `typecheck`/`test`/`bundle` npm scripts.
+- Contract test guarding the `@plone/mcp` surface the wrapper depends on (`__tests__/unit/ploneMcpContract.test.ts`).
+- esbuild pipeline (`scripts/build.mjs`) producing a single, committed `dist/local.js` entry point.
 
 ### Changed
 
-- The server now **extends the official `@plone/mcp` toolset** (`@plone/mcp` `1.0.0-alpha.1`) instead of implementing standalone tools; `plone_configure` and the full official toolset (blocks, workflow, translations, users, navigation tree, vocabularies, search) are available.
+- The server now **extends the official `@plone/mcp` toolset** instead of implementing standalone tools; `plone_configure` and the full official toolset (blocks, workflow, translations, users, navigation tree, vocabularies, search) are available.
+- `@plone/mcp` is pinned to the published `1.0.0-alpha.2` package. (To track unreleased changes, the dependency can be pointed at `git+https://github.com/plone/plone-mcp.git#main`; note that git installs require npm >= 11 because `@plone/mcp` compiles itself on install.)
+- All contact with `@plone/mcp` internals goes through a single adapter, `src/plone-mcp.ts`.
+- `main`/`bin` now point to the compiled and committed `dist/local.js`, so `tsx` is only needed for development (`npm run dev`). There is no `build`/`prepare` script, so git installs (`npx github:…`) do not install devDependencies (which crashes npm 10.9.x on vitest's peer set). Rebuild with `npm run bundle` before committing source changes.
+- The dynamic pages tools honour `ENABLED_TOOLS`, mirroring the official toolset.
 - Path arguments are normalized to site-relative paths (full `++api++` URLs are converted automatically).
 - README install docs: primary option runs via `npx github:codesyntax/cs-dynamicpages-mcp`, with an alternative section for running from a local clone.
 
