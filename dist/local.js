@@ -7,6 +7,124 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { createServer } from "@plone/mcp/dist/server.js";
 import { sessionManager } from "@plone/mcp/dist/session-manager.js";
 import { wrapError } from "@plone/mcp/dist/utils/block-utils.js";
+function getClient(extra) {
+  const sessionId = extra.sessionId || "default";
+  return sessionManager.getSession(sessionId).getClient();
+}
+function tryGetClient(extra) {
+  const sessionId = extra.sessionId || "default";
+  try {
+    return sessionManager.getSession(sessionId).getClient();
+  } catch {
+    return null;
+  }
+}
+
+// src/resources/docs.generated.ts
+var architectureMd = '# Plone Dynamic Pages Architecture\n\nThis document describes the structure and logic of the `cs_dynamicpages` system in Plone.\n\n## Content Hierarchy\n\nA Dynamic Page in Plone follows a specific nesting pattern:\n\n1. **DynamicPage**: The main container (e.g., a landing page or a portal home).\n2. **DynamicPageFolder (ID: `rows`)**: A hidden folder inside every `DynamicPage` that contains all the layout sections.\n3. **DynamicPageRow**: A section of the page. Each row has a `row_type` that determines its layout and fields.\n4. **DynamicPageRowFeatured**: Optional child items inside a `DynamicPageRow`. These are used for sliders, accordions, or feature grids.\n\n## Key Concepts\n\n### The "Rows" Folder\nLayout sections (Rows) are not direct children of the `DynamicPage`. They MUST be created inside the `DynamicPageFolder` located at `{page_url}/rows`.\n\n### Row Types (`row_type`)\nThe `row_type` field is critical. It determines:\n- Which fields in `DynamicPageRow` schema are relevant.\n- If the row can have `DynamicPageRowFeatured` children (check `row_type_has_featured_add_button` in `RowTypes` definitions).\n- The visual rendering on the frontend.\n\n### Common Fields\n- **title**: Internal name of the row or featured item.\n- **description**: Often used as the main text block in a row.\n- **extra_class**: CSS classes applied to the row wrapper (useful for custom styling like `bg-light`, `text-center`).\n- **related_image**: A relation field to an Image object in Plone.\n- **query**: Used in "Collection" type rows to automatically fetch content based on criteria.\n\n## Asset Management\n- **Images**: Should be uploaded to an `images` or `imagenes` folder. Use `plone_search` to find existing assets before uploading new ones.\n- **Links**: Use absolute Plone paths (e.g., `/es/blog/post-1`) or external URLs.\n\n## Content Mapping Patterns (Migration)\nWhen migrating content from a PDF to a Dynamic Page structure:\n- **Heading 1 + Short Para** -> `header-hero-view` or `cs_dynamicpages-title-description-view`.\n- **Three/Four Bullet Points** -> `cs_dynamicpages-features-view` (Check `columns` field).\n- **Q&A or List of Details** -> `cs_dynamicpages-accordion-view`.\n- **Images with Text Overlays** -> `cs_dynamicpages-featured-overlay-view`.\n- **Long Narrative** -> `cs_dynamicpages-text-view` or `cs_dynamicpages-intro-text-view`.\n\n## Workflow Patterns\n- **Layout Discovery**: Always call `plone_get_dynamic_page_content` to see the full structure including rows and featured items.\n- **Validation**: Compare desired fields against schemas fetched via `plone_get_site_definitions` before sending a request.\n\n## Protocol Evolution & Performance Standards\n\nTo ensure optimal performance and reliability when managing Dynamic Pages, the following technical standards must be adhered to:\n\n### 1. Request Optimization (Batch Operations)\n- **Standard**: When creating rows with child items, use `plone_create_dynamic_page_row` with nested `featured` items in one call. This reduces server round-trips and ensures layout atomicity.\n- **Retrieval Optimization**: To avoid partial layout data, `plone_get_dynamic_page_content` fetches with `b_size=1000`. For general discovery, `plone_search` supports custom `b_size` (defaults to 25).\n\n### 2. Schema Enforcement & Validation\n- **Schema Validation**: The MCP agent must validate payloads against schemas fetched via `plone_get_site_definitions` *before* execution.\n- **Prefix Consistency**: Ensure `row_type` values match the naming defined in `RowTypes` returned by `plone_get_site_definitions` (e.g. `cs_dynamicpages-`).\n- **Mandatory Defaults**: Fields like `query` must be initialized (e.g., as an empty list `[]`) even if not used, to satisfy Plone\'s strict type validation.\n\n### 3. Error Observability\n- **Traceback Passthrough**: In the event of a `400 BadRequest` or `401 Unauthorized`, the full Plone traceback must be captured and returned to the agent. This allows for immediate self-correction of technical field mismatches or permission issues.\n- **Permission Transparency**: Credential checks must verify effective permissions on the specific target container (e.g., the `rows` folder) before attempting modifications.\n';
+var migrationMd = '# Content Migration & Page Replication Expertise\n\nThis document outlines the protocol for replicating the structure of an existing Dynamic Page and populating it with new content extracted from a source document (like a PDF).\n\n## The "Skeleton + Mapping" Workflow\n\nWhen asked to "Replicate Page X using PDF Y", follow these steps:\n\n### 1. Structure Blueprinting (Extraction)\n- Call `plone_get_dynamic_page_content` on the **Source Page**.\n- Analyze the `rows_items_full` list.\n- For each row, record:\n    - `row_type` (The most critical field).\n    - Structural fields: `width`, `columns`, `extra_class`, `padding_*`, `margin_*`.\n    - Content placeholders: Identify where titles, descriptions, and featured items go.\n\n### 2. Semantic Data Extraction\n- Read the **PDF content**.\n- Segment the text into logical blocks that match the "shape" of the source rows.\n- If the source has a 3-column feature grid, find 3 distinct points or paragraphs in the PDF.\n\n### 3. Structural Mapping Rules\nMap PDF segments to Row Types based on these conventions:\n- **Hero/Header**: High-level value propositions, main titles.\n- **Features/Grid**: Lists of benefits, services, or product attributes.\n- **Accordion**: FAQs, technical specifications, or detailed lists.\n- **Text Blocks**: Narrative content or mission statements.\n\n### 4. Proposing the Blueprint (MANDATORY)\nBefore creating the new page, present a concise mapping to the user:\n- "Row 1 (Hero): Using \'Company Vision\' from PDF."\n- "Row 2 (3-Col Grid): Using the 3 service descriptions from PDF page 2."\n- "Row 3 (Accordion): Using the \'Terms & Conditions\' section."\n\n### 5. Execution (Targeted Creation)\n- Create the target **DynamicPage** (if it doesn\'t exist) using `plone_create_content`.\n- Navigate to `{target_page_url}/rows`.\n- Use `plone_create_dynamic_page_row` for each mapped row (optionally nesting featured items).\n- Ensure structural fields (`extra_class`, `width`) are copied exactly from the source to preserve the visual design.\n\n## Handling Mismatches\n- **PDF has more content**: Suggest adding new rows of the same type as the existing ones to maintain rhythm.\n- **PDF has less content**: Propose merging data or leaving specific sections out of the new page.\n- **Missing Images**: If the source has images but the PDF doesn\'t, use `plone_search` to find relevant generic images or ask the user for guidance.\n';
+
+// src/resources/shared.ts
+function markdownContent(uri, text) {
+  return { contents: [{ uri: uri.href, mimeType: "text/markdown", text }] };
+}
+function jsonContent(uri, data) {
+  return {
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify(data, null, 2)
+      }
+    ]
+  };
+}
+var NOT_CONFIGURED_MESSAGE = `This resource needs a Plone connection.
+
+Call \`plone_configure({ baseUrl, token })\` (or \`plone_configure({})\` when \`PLONE_BASE_URL\`/\`PLONE_TOKEN\` are set), then read this resource again.`;
+function notConfigured(uri) {
+  return markdownContent(uri, NOT_CONFIGURED_MESSAGE);
+}
+
+// src/resources/docs_architecture.ts
+var dynamicPagesArchitectureResource = {
+  name: "cs-dynamicpages-architecture",
+  uri: "cs-dynamicpages://docs/architecture",
+  description: "Dynamic Pages architecture: content hierarchy, row types, common fields and migration mapping.",
+  mimeType: "text/markdown",
+  handler: async (uri) => markdownContent(uri, architectureMd)
+};
+
+// src/resources/docs_migration.ts
+var dynamicPagesMigrationResource = {
+  name: "cs-dynamicpages-migration",
+  uri: "cs-dynamicpages://docs/migration",
+  description: 'Content migration protocol: the "Skeleton + Mapping" workflow for replicating pages.',
+  mimeType: "text/markdown",
+  handler: async (uri) => markdownContent(uri, migrationMd)
+};
+
+// src/dynamicPages/constants.ts
+var DYNAMIC_PAGES_REGISTRY_KEY = "cs_dynamicpages.dynamic_pages_control_panel.row_type_fields";
+
+// src/resources/row_types.ts
+var dynamicPagesRowTypesResource = {
+  name: "cs-dynamicpages-row-types",
+  uri: "cs-dynamicpages://row-types",
+  description: "Available DynamicPage row types, read from the site registry (row_type_fields).",
+  mimeType: "application/json",
+  handler: async (uri, extra) => {
+    const client = tryGetClient(extra);
+    if (!client) return notConfigured(uri);
+    return jsonContent(uri, await client.get(`/@registry/${DYNAMIC_PAGES_REGISTRY_KEY}`));
+  }
+};
+
+// src/resources/schemas.ts
+var dynamicPagesRowSchemaResource = {
+  name: "cs-dynamicpages-row-schema",
+  uri: "cs-dynamicpages://schemas/row",
+  description: "JSON schema of the DynamicPageRow content type.",
+  mimeType: "application/json",
+  handler: async (uri, extra) => {
+    const client = tryGetClient(extra);
+    if (!client) return notConfigured(uri);
+    return jsonContent(uri, await client.get("/@types/DynamicPageRow"));
+  }
+};
+var dynamicPagesRowFeaturedSchemaResource = {
+  name: "cs-dynamicpages-row-featured-schema",
+  uri: "cs-dynamicpages://schemas/row-featured",
+  description: "JSON schema of the DynamicPageRowFeatured content type.",
+  mimeType: "application/json",
+  handler: async (uri, extra) => {
+    const client = tryGetClient(extra);
+    if (!client) return notConfigured(uri);
+    return jsonContent(uri, await client.get("/@types/DynamicPageRowFeatured"));
+  }
+};
+
+// src/resources/index.ts
+var dynamicPagesResources = [
+  dynamicPagesArchitectureResource,
+  dynamicPagesMigrationResource,
+  dynamicPagesRowTypesResource,
+  dynamicPagesRowSchemaResource,
+  dynamicPagesRowFeaturedSchemaResource
+];
+function registerDynamicPagesResources(server) {
+  for (const resource of dynamicPagesResources) {
+    server.registerResource(
+      resource.name,
+      resource.uri,
+      {
+        description: resource.description,
+        mimeType: resource.mimeType
+      },
+      resource.handler
+    );
+  }
+}
 
 // src/tools/plone_create_dynamic_page_row.ts
 import { z as z2 } from "zod";
@@ -81,10 +199,6 @@ function localPath(id) {
 
 // src/tools/shared.ts
 import { z } from "zod";
-function getClient(extra) {
-  const sessionId = extra.sessionId || "default";
-  return sessionManager.getSession(sessionId).getClient();
-}
 function textContent(data) {
   return {
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -233,7 +347,6 @@ var ploneGetDynamicPageContent = {
 
 // src/tools/plone_get_site_definitions.ts
 import { z as z5 } from "zod";
-var DYNAMIC_PAGES_REGISTRY_KEY = "cs_dynamicpages.dynamic_pages_control_panel.row_type_fields";
 var ploneGetSiteDefinitions = {
   name: "plone_get_site_definitions",
   description: "Fetches the site-specific dynamic pages definitions: the DynamicPageRow and DynamicPageRowFeatured schemas and the list of available row types.",
@@ -379,6 +492,7 @@ function registerDynamicPagesTools(server) {
 function createExtendedServer() {
   const server = createServer();
   registerDynamicPagesTools(server);
+  registerDynamicPagesResources(server);
   return server;
 }
 

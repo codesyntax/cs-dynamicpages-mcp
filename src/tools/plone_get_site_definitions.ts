@@ -1,8 +1,6 @@
 import { z } from "zod";
+import { DYNAMIC_PAGES_REGISTRY_KEY } from "../dynamicPages/constants";
 import { getClient, runWith, textContent, type ToolDefinition } from "./shared";
-
-const DYNAMIC_PAGES_REGISTRY_KEY =
-  "cs_dynamicpages.dynamic_pages_control_panel.row_type_fields";
 
 export const ploneGetSiteDefinitions: ToolDefinition = {
   name: "plone_get_site_definitions",

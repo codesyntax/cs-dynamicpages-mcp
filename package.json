@@ -14,7 +14,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "bundle": "node scripts/build.mjs",
+    "bundle": "node scripts/generate-docs.mjs && node scripts/build.mjs",
     "dev": "tsx src/local.ts",
     "start": "node dist/local.js",
     "test": "vitest run",

@@ -28,6 +28,24 @@ Everything else comes from the official package: `plone_configure`, `plone_creat
 
 ---
 
+## 📚 MCP Resources
+
+Besides tools, the server exposes read-only MCP resources, discoverable by any MCP client:
+
+| Resource | URI | Content |
+| :--- | :--- | :--- |
+| Architecture | `cs-dynamicpages://docs/architecture` | Markdown reference: hierarchy, row types, common fields and migration mapping. |
+| Migration protocol | `cs-dynamicpages://docs/migration` | Markdown "Skeleton + Mapping" workflow for replicating pages. |
+| Row types | `cs-dynamicpages://row-types` | JSON list of available row types, from the site registry. |
+| DynamicPageRow schema | `cs-dynamicpages://schemas/row` | JSON schema of `DynamicPageRow`. |
+| DynamicPageRowFeatured schema | `cs-dynamicpages://schemas/row-featured` | JSON schema of `DynamicPageRowFeatured`. |
+
+The two documentation resources work without a Plone connection. The other three require `plone_configure`; until then they return a short message explaining how to configure the connection instead of failing.
+
+The official `@plone/mcp` resources (`plone://site`, `plone://types`, `plone://content{+path}`) remain available.
+
+---
+
 ## ⚠️ Differences from the standalone v1 server
 
 Earlier versions of this server shipped their own `set_session_context` / `check_credentials_status` / `create_dynamic_page_row` tools and authenticated with a `__ac` cookie. As of v2 the server delegates to `@plone/mcp`:

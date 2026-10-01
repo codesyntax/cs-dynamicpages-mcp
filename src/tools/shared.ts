@@ -1,13 +1,10 @@
 import { z } from "zod";
-import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import type {
-  CallToolResult,
-  ServerNotification,
-  ServerRequest,
-} from "@modelcontextprotocol/sdk/types.js";
-import { sessionManager, wrapError } from "../plone-mcp";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { getClient, wrapError, type Extra } from "../plone-mcp";
 
-export type Extra = RequestHandlerExtra<ServerRequest, ServerNotification>;
+export { getClient };
+export type { Extra };
+
 export type ToolHandler = (args: any, extra: Extra) => Promise<CallToolResult>;
 
 export interface ToolDefinition {
@@ -15,12 +12,6 @@ export interface ToolDefinition {
   description: string;
   inputSchema: z.ZodTypeAny;
   handler: ToolHandler;
-}
-
-/** Returns the Plone client of the current session (shared with plone_configure). */
-export function getClient(extra: Extra) {
-  const sessionId = extra.sessionId || "default";
-  return sessionManager.getSession(sessionId).getClient();
 }
 
 export function textContent(data: unknown): CallToolResult {

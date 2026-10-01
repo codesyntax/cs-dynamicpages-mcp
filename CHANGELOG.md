@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Vitest unit + handler seam tests, `tsconfig.json`, and `typecheck`/`test`/`bundle` npm scripts.
 - Contract test guarding the `@plone/mcp` surface the wrapper depends on (`__tests__/unit/ploneMcpContract.test.ts`).
 - esbuild pipeline (`scripts/build.mjs`) producing a single, committed `dist/local.js` entry point.
+- MCP resources for the Dynamic Pages documentation and definitions: `cs-dynamicpages://docs/architecture`, `cs-dynamicpages://docs/migration`, `cs-dynamicpages://row-types`, `cs-dynamicpages://schemas/row` and `cs-dynamicpages://schemas/row-featured`.
 
 ### Changed
 
