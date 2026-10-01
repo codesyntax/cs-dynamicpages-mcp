@@ -1,0 +1,62 @@
+import { z } from "zod";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import type {
+  CallToolResult,
+  ServerNotification,
+  ServerRequest,
+} from "@modelcontextprotocol/sdk/types.js";
+import { sessionManager, wrapError } from "../plone-mcp";
+
+export type Extra = RequestHandlerExtra<ServerRequest, ServerNotification>;
+export type ToolHandler = (args: any, extra: Extra) => Promise<CallToolResult>;
+
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: z.ZodTypeAny;
+  handler: ToolHandler;
+}
+
+/** Returns the Plone client of the current session (shared with plone_configure). */
+export function getClient(extra: Extra) {
+  const sessionId = extra.sessionId || "default";
+  return sessionManager.getSession(sessionId).getClient();
+}
+
+export function textContent(data: unknown): CallToolResult {
+  return {
+    content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+  };
+}
+
+/** Wraps a handler body so any failure surfaces as a consistent, prefixed error. */
+export function runWith(operation: string, fn: ToolHandler): ToolHandler {
+  return async (args, extra) => {
+    try {
+      return await fn(args, extra);
+    } catch (error) {
+      throw wrapError(operation, error);
+    }
+  };
+}
+
+export const featuredInputSchema = z.object({
+  title: z.string().optional().describe("Title of the featured item"),
+  fields: z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe("Custom field values for the featured item"),
+});
+
+export const rowInputSchema = z.object({
+  title: z.string().optional().describe("Title of the row"),
+  row_type: z.string().describe("Row type, e.g. 'hero' or 'columns'"),
+  fields: z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe("Custom field values for the row"),
+  featured: z
+    .array(featuredInputSchema)
+    .optional()
+    .describe("Featured items to create inside the row"),
+});

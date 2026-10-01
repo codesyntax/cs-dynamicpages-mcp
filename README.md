@@ -33,7 +33,7 @@ Everything else comes from the official package: `plone_configure`, `plone_creat
 Earlier versions of this server shipped their own `set_session_context` / `check_credentials_status` / `create_dynamic_page_row` tools and authenticated with a `__ac` cookie. As of v2 the server delegates to `@plone/mcp`:
 
 - Connect with `plone_configure({ baseUrl, token })` or `plone_configure({})` using `PLONE_BASE_URL` / `PLONE_TOKEN` (or username/password). The client does **not** support cookie auth; use a token or basic auth.
-- Tool arguments use site-relative **paths** (e.g. `/rows`, `/en/home`), not full `++api++` URLs.
+- Tool arguments use site-relative **paths** (e.g. `/rows`, `/en/home`). Full `++api++` URLs are also accepted and normalized to site-relative paths automatically.
 - `create_content`/`search_content`/`patch_content`/`delete_content` map to `plone_create_content`/`plone_search`/`plone_update_content`/`plone_delete_content`.
 
 ---
@@ -58,7 +58,7 @@ Add the following configuration to your **Opencode** (`opencode.json`):
 }
 ```
 
-`npx` fetches the repository from GitHub and launches the server automatically; nothing else needs to be installed.
+`npx` fetches the repository from GitHub and launches the committed build automatically; nothing else needs to be installed. `github:` resolves to `git+ssh`, so it requires an SSH key for GitHub; without one, use the HTTPS form: `npx -y git+https://github.com/codesyntax/cs-dynamicpages-mcp.git`.
 
 ### Running from a local clone
 
@@ -111,8 +111,9 @@ available without building:
 *   `PLONE_BASE_URL`: The base URL of your Plone site (used by `plone_configure` as a fallback).
 *   `PLONE_TOKEN`: Bearer token for authentication.
 *   `PLONE_USERNAME` / `PLONE_PASSWORD`: Basic auth credentials.
+*   `ENABLED_TOOLS`: Optional comma-separated allow-list of tool names; applies to both the official tools and the dynamic pages tools.
 
-*Note: You can also set these dynamically during a session with the `plone_configure` tool.*
+*Note: You can also set these dynamically during a session with the `plone_configure` tool. `@plone/mcp` additionally reads `PLONE_SESSION_TTL` and `PLONE_PREPARED_BLOCKS_TTL`.*
 
 Requires a Node.js version supported by `@plone/mcp`: `^20.19.0 || >=22.12.0` (Node.js 22+ recommended).
 
@@ -123,7 +124,7 @@ Requires a Node.js version supported by `@plone/mcp`: `^20.19.0 || >=22.12.0` (N
 *   **`src/local.ts`**: Entry point for local `stdio` execution (the extended server).
 *   **`src/extended-server.ts`**: Creates the `@plone/mcp` server and registers the dynamic pages tools.
 *   **`src/plone-mcp.ts`**: Single adapter re-exporting the `@plone/mcp` internals the wrapper relies on.
-*   **`src/tools/registerDynamicPagesTools.ts`**: The seven dynamic pages tools and their registration.
+*   **`src/tools/`**: One file per dynamic pages tool (`plone_*.ts`), plus `shared.ts` (helpers and schemas) and `index.ts` (the `dynamicPagesTools` list and `registerDynamicPagesTools`), mirroring the `@plone/mcp` layout.
 *   **`src/dynamicPages/`**: Pure helpers (payload builders, ordering computation, hierarchy reassembly) shared by the tools.
 *   **`scripts/build.mjs`**: esbuild bundling of `src/local.ts` into `dist/local.js`.
 

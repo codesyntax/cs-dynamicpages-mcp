@@ -4,7 +4,7 @@ import { sessionManager } from "@plone/mcp/dist/session-manager.js";
 import {
   dynamicPagesTools,
   registerDynamicPagesTools,
-} from "../../src/tools/registerDynamicPagesTools";
+} from "../../src/tools/index";
 import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import type {
   CallToolResult,
@@ -139,7 +139,7 @@ describe("handler seam", () => {
 
   it("get_dynamic_page_content fetches the page + rows and reassembles the hierarchy", withClient(
     (client) => {
-      client.get.mockImplementation(async (path: string, params?: Record<string, unknown>) => {
+      client.get.mockImplementation(async (path: string, params?: unknown) => {
         if (path === "/en/home") {
           return {
             "@type": "DynamicPage",
@@ -150,7 +150,13 @@ describe("handler seam", () => {
           };
         }
         if (path === "/@search") {
-          expect(params?.path).toBe("/en/home");
+          expect(params).toBeInstanceOf(URLSearchParams);
+          const query = params as URLSearchParams;
+          expect(query.get("path")).toBe("/en/home");
+          expect(query.getAll("portal_type")).toEqual([
+            "DynamicPageRow",
+            "DynamicPageRowFeatured",
+          ]);
           return {
             items: [
               { "@id": "https://site/++api++/en/home/rows/row-a", "@type": "DynamicPageRow" },
@@ -218,9 +224,9 @@ describe("handler seam", () => {
         },
         extra(sessionId),
       );
-      expect(client.get).toHaveBeenCalledWith("/rows");
+      expect(client.get).toHaveBeenCalledWith("/rows", { b_size: 1000 });
       expect(client.patch).toHaveBeenCalledWith("/rows", {
-        ordering: { obj_id: "row-a", delta: 1 },
+        ordering: { obj_id: "row-a", delta: 0 },
       });
     },
   ));
@@ -240,8 +246,9 @@ describe("handler seam", () => {
         { folderPath: "/rows", rowId: "row-a", position: "1" },
         extra(sessionId),
       );
+      expect(client.get).toHaveBeenCalledWith("/rows", { b_size: 1000 });
       expect(client.patch).toHaveBeenCalledWith("/rows", {
-        ordering: { obj_id: "row-a", delta: 1 },
+        ordering: { obj_id: "row-a", delta: 0 },
       });
     },
   ));

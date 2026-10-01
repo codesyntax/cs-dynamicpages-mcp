@@ -30,6 +30,19 @@ describe("buildRowPayload", () => {
       row_type: "columns",
     });
   });
+
+  it("does not let custom fields override @type or row_type", () => {
+    expect(
+      buildRowPayload({
+        row_type: "hero",
+        fields: { "@type": "Document", row_type: "hacked" },
+      }),
+    ).toEqual({
+      "@type": "DynamicPageRow",
+      title: "New Row",
+      row_type: "hero",
+    });
+  });
 });
 
 describe("buildFeaturedPayload", () => {
@@ -48,6 +61,15 @@ describe("buildFeaturedPayload", () => {
 
   it("defaults the title when not provided", () => {
     expect(buildFeaturedPayload({})).toEqual({
+      "@type": "DynamicPageRowFeatured",
+      title: "Featured Item",
+    });
+  });
+
+  it("does not let custom fields override @type", () => {
+    expect(
+      buildFeaturedPayload({ fields: { "@type": "Document" } }),
+    ).toEqual({
       "@type": "DynamicPageRowFeatured",
       title: "Featured Item",
     });

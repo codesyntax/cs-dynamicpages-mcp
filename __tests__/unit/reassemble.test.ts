@@ -116,6 +116,26 @@ describe("reassembleDynamicContent", () => {
     expect(rowIds).toEqual(["https://site/++api++/home/rows/row-a"]);
   });
 
+  it("ignores rows from sibling folders that only share the id prefix", () => {
+    const result = reassembleDynamicContent(pageData, [
+      {
+        "@id": "https://site/++api++/home/rows/row-a",
+        "@type": "DynamicPageRow",
+      },
+      {
+        "@id": "https://site/++api++/home/rows-extra/row-x",
+        "@type": "DynamicPageRow",
+      },
+    ]);
+
+    const rowsFolder = result.dynamic_rows_folder_full as {
+      rows_items_full: Array<{ "@id": string }>;
+    };
+    expect(rowsFolder.rows_items_full.map((r) => r["@id"])).toEqual([
+      "https://site/++api++/home/rows/row-a",
+    ]);
+  });
+
   it("does not mutate the input page data", () => {
     const snapshot = JSON.stringify(pageData);
     reassembleDynamicContent(pageData, searchResults);

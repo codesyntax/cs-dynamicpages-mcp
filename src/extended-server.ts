@@ -1,5 +1,5 @@
 import { createServer } from "./plone-mcp";
-import { registerDynamicPagesTools } from "./tools/registerDynamicPagesTools";
+import { registerDynamicPagesTools } from "./tools/index";
 
 export function createExtendedServer() {
   const server = createServer();
