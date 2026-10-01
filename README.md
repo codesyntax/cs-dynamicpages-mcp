@@ -60,6 +60,8 @@ Add the following configuration to your **Opencode** (`opencode.json`):
 
 `npx` fetches the repository from GitHub and launches the committed build automatically; nothing else needs to be installed. `github:` resolves to `git+ssh`, so it requires an SSH key for GitHub; without one, use the HTTPS form: `npx -y git+https://github.com/codesyntax/cs-dynamicpages-mcp.git`.
 
+Authentication is provided through the server's `environment` block — see [Credentials & environment variables](#credentials--environment-variables). A `.env` file is not read.
+
 ### Running from a local clone
 
 Clone the repository and install its dependencies:
@@ -106,14 +108,55 @@ available without building:
 }
 ```
 
-### Environment Variables
+### Credentials & environment variables
 
-*   `PLONE_BASE_URL`: The base URL of your Plone site (used by `plone_configure` as a fallback).
-*   `PLONE_TOKEN`: Bearer token for authentication.
-*   `PLONE_USERNAME` / `PLONE_PASSWORD`: Basic auth credentials.
-*   `ENABLED_TOOLS`: Optional comma-separated allow-list of tool names; applies to both the official tools and the dynamic pages tools.
+`@plone/mcp` reads its configuration from the process environment. Supported variables:
 
-*Note: You can also set these dynamically during a session with the `plone_configure` tool. `@plone/mcp` additionally reads `PLONE_SESSION_TTL` and `PLONE_PREPARED_BLOCKS_TTL`.*
+| Variable | Description |
+| :--- | :--- |
+| `PLONE_BASE_URL` | Base URL of your Plone site (fallback for `plone_configure`). |
+| `PLONE_TOKEN` | Bearer token for authentication (alternative to username/password). |
+| `PLONE_USERNAME` / `PLONE_PASSWORD` | Basic auth credentials. |
+| `ENABLED_TOOLS` | Optional comma-separated allow-list of tool names; applies to both the official tools and the dynamic pages tools. |
+| `PLONE_SESSION_TTL` | Session TTL in milliseconds (from `@plone/mcp`). |
+| `PLONE_PREPARED_BLOCKS_TTL` | Prepared-blocks TTL in milliseconds (from `@plone/mcp`). |
+
+Provide them through the MCP server's `environment` block in `opencode.json`:
+
+```json
+{
+  "mcp": {
+    "cs-dynamicpages-mcp": {
+      "type": "local",
+      "command": ["npx", "-y", "github:codesyntax/cs-dynamicpages-mcp"],
+      "environment": {
+        "PLONE_BASE_URL": "https://your-plone",
+        "PLONE_TOKEN": "eyJhbGciOi..."
+      },
+      "enabled": true,
+      "timeout": 60000
+    }
+  }
+}
+```
+
+Or with basic auth instead of a token:
+
+```json
+"environment": {
+  "PLONE_BASE_URL": "https://your-plone",
+  "PLONE_USERNAME": "admin",
+  "PLONE_PASSWORD": "secret"
+}
+```
+
+Then call `plone_configure({})` once per session. The credentials live in the server process environment; the model never needs to read them.
+
+> ⚠️ **A `.env` file is not loaded into the MCP server.** Verified with OpenCode: with a variable defined only in `.env`, the server process received `undefined`, and `{env:VAR}` resolved to an empty string (OpenCode runs a long-lived background service, so the MCP process inherits the service environment, not the environment of the shell that runs a single command).
+
+If you prefer not to store secrets in `opencode.json`, use substitution (`"PLONE_TOKEN": "{env:PLONE_TOKEN}"`) and make sure the variable is present in the environment that starts the OpenCode **service** (then restart it, e.g. `opencode service restart`). Exporting it only in the shell of a one-off command does not reach the server.
+
+*Note: credentials can also be passed at runtime with `plone_configure({ baseUrl, token })` (or username/password).*
 
 Requires a Node.js version supported by `@plone/mcp`: `^20.19.0 || >=22.12.0` (Node.js 22+ recommended).
 
